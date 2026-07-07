@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration - E-Learning System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .register-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .register-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        .btn-register {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn-register:hover {
+            background: #45a049;
+            color: white;
+        }
+        .back-link {
+            color: #4CAF50;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .back-link:hover {
+            color: #45a049;
+        }
+        .alert {
+            display: none;
+            margin-top: 20px;
+        }
+        .password-requirements {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container register-container">
+        <div class="register-card">
+            <h2 class="text-center mb-4">User Registration</h2>
+            <form id="registerForm">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                    <div class="password-requirements">
+                        Password must be at least 6 characters long
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                </div>
+                <div class="mb-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select class="form-control" id="role">
+                        <option value="student">Student</option>
+                        <option value="instructor">Instructor</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-register">Register</button>
+            </form>
+            <div class="alert alert-success" role="alert" id="successAlert">
+                Registration successful! Redirecting to login...
+            </div>
+            <div class="alert alert-danger" role="alert" id="errorAlert">
+                Error message here
+            </div>
+            <div class="text-center">
+                <p>Already have an account? <a href="login.html" class="back-link">Login here</a></p>
+                <a href="main.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#registerForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const name = $('#name').val();
+                const email = $('#email').val();
+                const password = $('#password').val();
+                const confirmPassword = $('#confirmPassword').val();
+                const role = $('#role').val();
+
+                // Basic validation
+                if (!name || !email || !password || !confirmPassword) {
+                    $('#errorAlert').text('Please fill in all fields').show();
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    $('#errorAlert').text('Passwords do not match').show();
+                    return;
+                }
+
+                if (password.length < 6) {
+                    $('#errorAlert').text('Password must be at least 6 characters long').show();
+                    return;
+                }
+
+                // Send registration request to backend
+                $.ajax({
+                    url: 'http://localhost:5000/api/auth/register',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password,
+                        role: role
+                    }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        // Store token in localStorage
+                        localStorage.setItem('userToken', response.token);
+                        localStorage.setItem('userId', response.user.id);
+                        
+                        $('#successAlert').show();
+                        $('#errorAlert').hide();
+                        
+                        // Redirect to main page after 2 seconds
+                        setTimeout(() => {
+                            window.location.href = 'main.html';
+                        }, 2000);
+                    },
+                    error: function(xhr) {
+                        $('#errorAlert').text(xhr.responseJSON?.message || 'Registration failed. Please try again.').show();
+                        $('#successAlert').hide();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
